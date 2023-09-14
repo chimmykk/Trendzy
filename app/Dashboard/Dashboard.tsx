@@ -39,7 +39,7 @@ export default function Dashboard() {
 
  function Sidebar() {
   return(
-      <div className='fixed min-h-screen flex flex-col gap-6 py-4 h-[1000px] pr-4 overflow-y-scroll col-span-1'>
+      <div className=' hidden fixed min-h-screen lg:flex flex-col gap-6 py-4 h-[1000px] pr-4 overflow-y-scroll col-span-1'>
         <h1 className='text-xl font-bold '>CATEGORIES</h1>
         <div className=' text-base font-semibold flex flex-col '>
           <Link href={'./'} className='bg-bgGray rounded-lg px-2 py-2  block w-44'>
