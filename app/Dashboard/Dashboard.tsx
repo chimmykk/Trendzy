@@ -17,7 +17,7 @@ export default function Dashboard() {
             </div>
             <div className=' inline-block text-base '>
               <h1 className='text-base text-black font-bold'>Harry Koren</h1>
-              <h1>New Comics + Adult Show</h1>
+              <h1>New Comics </h1>
             </div>
           </Link>
           {/* 2 */}
@@ -28,7 +28,7 @@ export default function Dashboard() {
             </div>
               <div className=' inline-block text-base '>
                 <h1 className='text-base text-black font-bold'>Harry Koren</h1>
-                <h1>New Comics + Adult Show</h1>
+                <h1>New Comics</h1>
               </div>
           </Link>
         </div>
