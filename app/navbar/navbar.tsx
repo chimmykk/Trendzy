@@ -14,6 +14,7 @@ FiDownload,
 FiLogOut,
 FiDollarSign } from "react-icons/fi"
 
+//next-auth sessions
 import { useSession, signOut } from "next-auth/react"
 
 export default  function Navbar() {
@@ -137,25 +138,27 @@ export default  function Navbar() {
             </div>
 
          {/* for screen lower than md */}
-            <div className="lg:hidden py-5 flex justify-between items-center">
+            <div className="lg:hidden w-full py-5 flex justify-between items-center">
                 <div>
-                    <h1 className=" text-2xl font-bold">trendzy</h1>
+                    <Link href={'/'} className=" text-2xl font-bold">trendzy</Link>
                 </div>
                 {
                     !session ?
                     (
-                    <div 
-                        onClick={toggleModalLogin} 
-                        className=" cursor-pointer bg-bgGray hover:bg-[#e4dfdf] transition-hover duration-300 rounded-lg py-2 px-4">
-                        Log In
-                    </div>
+                     <div
+          onClick={toggleModalLogin}
+          className="cursor-pointer bg-bgGray hover:bg-[#e4dfdf] transition-hover duration-300 rounded-lg py-2 px-4 flex items-center"
+        >
+          <RiUser3Line className="text-xl mr-2" /> {/* Add the login icon */}
+          Log In
+        </div>
                     ) 
                     :
                     (
                         <button onClick={() =>  setShowMenu(true)} className="  flex flex-col gap-1.5">
-                    <div className="w-[20px]  border"></div>
-                    <div className="w-[15px]  border"></div>
-                    <div className="w-[20px]  border"></div>
+                    <div className="w-[20px]  border border-black"></div>
+                    <div className="w-[15px]  border border-black"></div>
+                    <div className="w-[20px]  border border-black"></div>
                 </button>
                     )
 
@@ -163,7 +166,7 @@ export default  function Navbar() {
                 <div className={`${showMenu ? "  left-0" : " -left-[100%]"} fixed top-0 min-h-screen w-full`}>
                     <div onClick={() => setShowMenu(false)} className="absolute  overflow-y-hidden z-50 w-full min-h-screen bg-black opacity-50">
                     </div>
-                    <div  className={`${showMenu ? "left-0 " : "-left-[100%]"} flex flex-col py-20 transition-all duration-500 min-h-screen max-h-screen ease-in-out px-10 w-1/2 gap-8 fixed top-0 z-50 bg-white  overflow-y-auto overflow-x-hidden `}>
+                    <div  className={`${showMenu ? "left-0 " : "-left-[100%]"} flex flex-col py-20 transition-all duration-500 min-h-screen max-h-screen ease-in-out px-5 w-3/4 gap-8 fixed top-0 z-50 bg-white  overflow-y-auto overflow-x-hidden `}>
                         <button onClick={() => setShowMenu(false)}  className="absolute top-5 right-5">X</button>
                         {/* List of user menu items */}
                         <ul>
