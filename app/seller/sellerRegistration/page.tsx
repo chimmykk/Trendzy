@@ -98,7 +98,7 @@ const subcategories: { [key: string]: string[] } = {
     };
 
     // Send the data to the server
-    fetch('http://localhost:3000/api/flow/route', {
+    fetch('https://trendzy2.vercel.app/api/flow/route', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
