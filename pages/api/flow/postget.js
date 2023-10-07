@@ -2,69 +2,67 @@ import fs from 'fs';
 import path from 'path';
 
 const livestreamingFolder = path.join(__dirname, 'livestreaming');
-let fileCounter = 1;
 
 export default async function handler(req, res) {
   try {
     console.log('Received request:', req.method, req.url);
 
     if (req.method === 'POST') {
-      const { channelName } = req.body;
+      const { channelName, email } = req.body;
+      const { title, tags, visibility, name } = req.body;
+      const copiedChannelName = name;
       console.log('Received channel name:', channelName);
-
-      const logData = {
-        userlive: {
-          channelName,
-          timestamp: new Date().toISOString(),
-        },
+      console.log('Received title', title);
+      console.log('Received tags', tags);
+      console.log('Received visibility', visibility);
+      console.log('Received email:', email);
+      // Generate the userlive object
+      const userlive = {
+        channelName: copiedChannelName,
+        email,
+        timestamp: new Date().toISOString(),
+        title,
+        tags,
+        visibility,
+       
       };
 
-      if (!fs.existsSync(livestreamingFolder)) {
-        fs.mkdirSync(livestreamingFolder, { recursive: true });
-      }
+      // Wrap the userlive object in a logData object
+      const logData = {
+        userlive,
+      };
 
-      const fileName = `userlive${fileCounter}.json`;
-      const filePath = path.join(livestreamingFolder, fileName);
-      console.log('File path:', filePath);
+      const filePath = path.join(livestreamingFolder, `${email}.json`);
 
-      const logDataJson = JSON.stringify(logData, null, 2);
-
-      fs.writeFile(filePath, logDataJson, (err) => {
-        if (err) {
-          console.error('Error writing to file:', err);
-          res.status(500).json({ message: 'Error writing to file' });
-        } else {
-          console.log('Log saved to file:', fileName);
-          res.status(200).json({ message: 'Channel name received and logged successfully' });
-        }
-      });
-
-      fileCounter++;
-    } else if (req.method === 'GET') {
-      const { fileNumber } = req.query;
-      const fileName = `userlive${fileNumber}.json`;
-
-      const filePath = path.join(livestreamingFolder, fileName);
-
-      if (!fs.existsSync(filePath)) {
-        res.status(404).json({ message: 'File not found' });
-        return;
-      }
-
-      fs.readFile(filePath, 'utf8', (err, data) => {
-        if (err) {
-          console.error('Error reading file:', err);
-          res.status(500).json({ message: 'Error reading file' });
-        } else {
-          try {
-            const jsonData = JSON.parse(data);
-            res.status(200).json(jsonData);
-          } catch (parseError) {
-            console.error('Error parsing JSON:', parseError);
-            res.status(500).json({ message: 'Error parsing JSON' });
+      if (fs.existsSync(filePath)) {
+        const existingData = JSON.parse(fs.readFileSync(filePath));
+        const newData = existingData.map(item => {
+          if (item.userlive.email === email) {
+            return logData; // Replace the existing data with the new one
           }
+          return item;
+        });
+
+        fs.writeFileSync(filePath, JSON.stringify(newData, null, 2));
+        res.status(200).json({ message: 'Channel name and email updated successfully' });
+      } else {
+        // File for email doesn't exist, create a new file
+        fs.writeFileSync(filePath, JSON.stringify([logData], null, 2));
+        res.status(200).json({ message: 'Channel name and email logged successfully' });
+      }
+    } else if (req.method === 'GET') {
+      const files = fs.readdirSync(livestreamingFolder);
+      const responseData = [];
+
+      for (const file of files) {
+        if (file.endsWith('.json')) {
+          const filePath = path.join(livestreamingFolder, file);
+          const jsonData = JSON.parse(fs.readFileSync(filePath));
+          responseData.push(jsonData); // Push each JSON file's content
         }
-      });
+      }
+
+      res.status(200).json({ data: responseData });
     } else {
       const notAllowedResponse = {
         message: 'Method not allowed.',

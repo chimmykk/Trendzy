@@ -94,33 +94,22 @@ const Audience: React.FunctionComponent = () => {
   const [uid, setUid] = useState('');
 
   const fetchAllChannels = async () => {
-    const responseData: any[] = [];
-    let id = 1;
-    let channelExists = true;
-  
-    while (channelExists) {
-      try {
-        const response = await fetch(`http://localhost:3000/api/flow/postget?fileNumber=${id}`);
-  
-        if (!response.ok) {
-          // If the response is not OK, it means the channel doesn't exist.
-          channelExists = false;
-          break;
-        }
-  
-        const jsonData = await response.json();
-        responseData.push(jsonData);
-        id++;
-      } catch (error) {
-        console.error('Error fetching channel:', error);
-        break;
+    try {
+      const response = await fetch('http://localhost:3000/api/flow/postget');
+      if (!response.ok) {
+        throw new Error('Failed to fetch channels.');
       }
+      const jsonData = await response.json();
+  
+      // Extract channel names from the response data
+      const channelNames = jsonData.data.map((item: { userlive: { channelName: any; }; }[]) => item[0].userlive.channelName);
+  
+      setChannelNames(channelNames);
+    } catch (error) {
+      console.error('Error fetching channels:', error);
     }
-  
-    const channelNames = responseData.map((data) => data.userlive?.channelName).filter(Boolean);
-    setChannelNames(channelNames);
   };
-  
+
 
   useEffect(() => {
     fetchAllChannels();

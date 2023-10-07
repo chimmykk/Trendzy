@@ -5,8 +5,9 @@ import * as Yup from "yup";
 import Visibility from "./Visibility";
 import Details from "./Details";
 import { FaEye, FaInfo } from 'react-icons/fa'
-import { FormikProps } from "formik";
+import { FormikHelpers, FormikProps } from "formik";
 import { FormikValues } from "formik";
+import { useSession } from 'next-auth/react';
 
 
 interface RenderProps extends FormikProps<FormikValues> {
@@ -36,19 +37,68 @@ interface RenderProps extends FormikProps<FormikValues> {
 }
 
 
-
 export default function App() {
+  const { data: session } = useSession();
+
+  const onSubmit = async (values: FormikValues, formikHelpers: FormikHelpers<FormikValues>) => {
+    const { title, tags, visibility } = values;
+console.log(session?.user?.email);
+console.log(session?.user?.name)
+    // Get the email from the session
+    const email = session?.user?.email;
+    const name  = session?.user?.name
+   
+    const firstWord = name?.split(' ')[0];
+    
+    if (!email) {
+      console.error('No user email found in session.');
+      return;
+    }
+    if (!name) {
+      console.error('No user user found in session.');
+      return;
+    }
+
+    // Construct the request body
+    const requestBody = {
+      title,
+      tags,
+      visibility,
+      email,// Include the email in the request body
+      name:firstWord // Include the name in the request body
+    };
+
+    // Display alert with form values
+    const combinedMessage = `Form Values: ${JSON.stringify({ ...values, Email: email, Name :name }, null, 2)}`;
+    console.log(combinedMessage); // append email+form value
+
+    // Make a POST request to the API endpoint
+    try {
+      const response = await fetch('http://localhost:3000/api/flow/postget', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (response.ok) {
+        alert('Channel data updated successfully');
+      } else {
+        alert('Failed to update channel data');
+      }
+    } catch (error) {
+      console.error('Error updating channel data:', error);
+      alert('An error occurred while updating channel data');
+    }
+  };
   return (
-    <div className=" relative bg-[#1E1F22] text-white my-[41.4px] h-[480px]  overflow-y-scroll  overflow-x-hidden w-[800px] mx-auto rounded-lg shadow-lg">
+    <div className="relative bg-[#1E1F22] text-white my-[41.4px] h-[480px] overflow-y-scroll overflow-x-hidden w-[800px] mx-auto rounded-lg shadow-lg">
       <FormikWizard
-        initialValues={{}}
-        onSubmit={(values) => {
-          alert(JSON.stringify(values, null, 2));
-          console.log(values)
-            
-        }}
+        initialValues={{}}  // Your initial form values go here
+        onSubmit={onSubmit}
         validateOnNext
-        activeStepIndex ={0}
+        activeStepIndex={0}
         steps={[
           {
             component: Details,

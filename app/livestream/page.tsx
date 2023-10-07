@@ -3,39 +3,20 @@ import React, { useState, useEffect, useRef } from 'react';
 import AgoraUIKit, { PropsInterface, layout } from 'agora-react-uikit';
 import AgoraRTM from 'agora-rtm-sdk';
 import { v4 as uuidv4 } from 'uuid';
+import { useSession } from 'next-auth/react';
+
 const APP_ID = 'c4d6e23287ed4da6b6831383945f9ed2';
-const generateRandomChannelName = () => {
-  const alphabet = 'abcdefghijklmnopqrstuvwxyz';
-  let result = '';
-  const fixedLength = 7;
-  for (let i = 0; i < fixedLength; i++) {
-    const randomChar = alphabet[Math.floor(Math.random() * alphabet.length)];
-    result += randomChar;
-  }
-  return result;
-};
-const sendChannelNameToServer = async (channelName: string) => {
-    try {
-      const response = await fetch('http://localhost:3000/api/flow/postget', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ channelName }),
-      });
-  
-      return response;
-    } catch (error) {
-      console.error('Error sending channel name:', error);
-      throw new Error('Failed to send channel name.');
-    }
-  };
+
+
+// send the details via post method to the folder livestreaming(nextjs server)
+
+
 
 const App = ({ channel, uid }: { channel: any; uid: string }) => {
   const messagesRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<{ text: string; uid: any }[]>([]);
   const [text, setText] = useState('');
-
+  
   const appendMessage = (message: { text: string; uid: any }) => {
     setMessages((messages) => [...messages, message]);
   };
@@ -117,7 +98,11 @@ const StartStream: React.FunctionComponent = () => {
   const [channel, setChannel] = useState<any>(null);
   const [channelCreated, setChannelCreated] = useState(false);
   const [uid, setUid] = useState('');
+  const { data: session } = useSession();
 
+  console.log(session?.user?.name)
+  const name  = session?.user?.name
+  const firstWord = name?.split(' ')[0];
   const props: PropsInterface = {
     rtcProps: {
       appId: APP_ID,
@@ -130,34 +115,37 @@ const StartStream: React.FunctionComponent = () => {
         setVideocall(false);
         setChannelCreated(false);
       },
+
     },
     styleProps: {
       localBtnContainer: { backgroundColor: 'green' },
     },
   };
-
   const handleCreateChannel = async () => {
     const client = AgoraRTM.createInstance(APP_ID);
     const newUid = uuidv4();
-    const newChannelName = generateRandomChannelName();
-
+    const newChannelName = firstWord;
+  
     try {
       await client.login({ uid: newUid, token: undefined });
+      console.log(session?.user?.email);
+  
+  
 
-      // Send the channel name to the server
-      const response = await sendChannelNameToServer(newChannelName);
+  
+    
 
-      if (!response.ok) {
-        throw new Error('Failed to send channel name.');
-      }
-
-      const newChannel = client.createChannel(newChannelName);
+  
+     
+  
+      const newChannel = client.createChannel(newChannelName || 'st');
       await newChannel.join();
+  
 
       setChannel(newChannel);
       setChannelCreated(true);
       setVideocall(true);
-      setChannelName(newChannelName);
+      setChannelName(newChannelName || 'st');
       setUid(newUid);
     } catch (error) {
       console.error('Error creating/joining the channel:', error);
@@ -180,6 +168,8 @@ const StartStream: React.FunctionComponent = () => {
           </div>
         </>
       ) : (
+
+
         <button className="" onClick={handleCreateChannel} disabled={channelCreated}>
           Create Channel with Random
         </button>
