@@ -3,20 +3,25 @@ import path from 'path';
 
 const livestreamingFolder = path.join(__dirname, 'livestreaming');
 
+// Check if the livestreaming folder exists, and create it if it doesn't
+if (!fs.existsSync(livestreamingFolder)) {
+  fs.mkdirSync(livestreamingFolder);
+  console.log('Livestreaming folder created successfully.');
+}
+
 export default async function handler(req, res) {
   try {
     console.log('Received request:', req.method, req.url);
 
     if (req.method === 'POST') {
-      const { channelName, email } = req.body;
-      const { title, tags, visibility, name } = req.body;
+      const { channelName, email, title, tags, visibility, name } = req.body;
       const copiedChannelName = name;
       console.log('Received channel name:', channelName);
       console.log('Received title', title);
       console.log('Received tags', tags);
       console.log('Received visibility', visibility);
       console.log('Received email:', email);
-      // Generate the userlive object
+      
       const userlive = {
         channelName: copiedChannelName,
         email,
@@ -24,10 +29,8 @@ export default async function handler(req, res) {
         title,
         tags,
         visibility,
-       
       };
 
-      // Wrap the userlive object in a logData object
       const logData = {
         userlive,
       };
@@ -38,7 +41,7 @@ export default async function handler(req, res) {
         const existingData = JSON.parse(fs.readFileSync(filePath));
         const newData = existingData.map(item => {
           if (item.userlive.email === email) {
-            return logData; // Replace the existing data with the new one
+            return logData;
           }
           return item;
         });
@@ -46,7 +49,6 @@ export default async function handler(req, res) {
         fs.writeFileSync(filePath, JSON.stringify(newData, null, 2));
         res.status(200).json({ message: 'Channel name and email updated successfully' });
       } else {
-        // File for email doesn't exist, create a new file
         fs.writeFileSync(filePath, JSON.stringify([logData], null, 2));
         res.status(200).json({ message: 'Channel name and email logged successfully' });
       }
@@ -58,7 +60,7 @@ export default async function handler(req, res) {
         if (file.endsWith('.json')) {
           const filePath = path.join(livestreamingFolder, file);
           const jsonData = JSON.parse(fs.readFileSync(filePath));
-          responseData.push(jsonData); // Push each JSON file's content
+          responseData.push(jsonData);
         }
       }
 
